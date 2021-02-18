@@ -21,7 +21,7 @@
         </div>
         <div class="row">
             <div id="list-example" class="list-group col-md-1">
-                <button type="button" class="list-group-item list-group-item-action list-group-item-primary" data-toggle="modal" href="#addDetails">ADD</button>
+                <button type="button" class="list-group-item list-group-item-action list-group-item-primary" data-toggle="modal" onclick="showAddDetailsModal()">ADD</button>
                 <!-- add/edit details Modal -->
                 <!--<script>
                 //$('#addDetails').on('show.bs.modal', function (event) {
@@ -61,19 +61,19 @@
                                 <div class="form-group row">
                                         <label for="name-input" class="col-sm-2 col-form-label">Name</label>
                                         <div class="col-sm-10">
-                                        <input type="text" class="form-control" id="name-input" name="name" required>
+                                        <input type="text" class="form-control" id="name-input" name="name" >
                                         </div>
                                     </div>
                                     <div class="form-group row">
                                         <label for="phone-input" class="col-sm-2 col-form-label">Phone No.</label>
                                         <div class="col-sm-10">
-                                        <input type="tel" class="form-control" id="phone-input" name="phone" required >
+                                        <input type="tel" class="form-control" id="phone-input" name="phone" >
                                         </div>
                                     </div>
                                     <div class="form-group row">
-                                        <label for="Email-input" class="col-sm-2 col-form-label">Email</label>
+                                        <label for="email-input" class="col-sm-2 col-form-label">Email</label>
                                         <div class="col-sm-10">
-                                        <input type="email" class="form-control" id="Email-input" name="email" required >
+                                        <input type="email" class="form-control" id="email-input" name="email" >
                                         </div>
                                     </div>
                                     <fieldset class="form-group">
@@ -81,13 +81,13 @@
                                         <legend class="col-form-label col-sm-2 pt-0">Gender </legend>
                                         <div class="col-sm-10">
                                             <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="gender" id="male" value="male" required >
+                                            <input class="form-check-input" type="radio" name="gender" id="male" value="male" >
                                             <label class="form-check-label" for="male">
                                                 Male
                                             </label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="gender" id="female" value="female" >
+                                            <input class="form-check-input" type="radio" name="gender" id="female" value="female">
                                             <label class="form-check-label" for="female">
                                                 Female
                                             </label>
@@ -246,7 +246,10 @@
                                 <td><?php echo $row['district']; ?></td>
                                 <td><?php echo $row['address']; ?></td>
                                 <td>
-                                <button class="btn btn-outline-primary" type="button" data-toggle="modal" href="#addDetails"><i class="fa fa-edit"></i></button>
+                                <button class="btn btn-outline-primary" type="button" data-toggle="modal" 
+                                    onclick='showEditDetailsModal({id: <?php echo $row['id']; ?>, name: "<?php echo $row['name']; ?>", phone: "<?php echo $row['phone']; ?>", email: "<?php echo $row['email']; ?>", gender: "<?php echo $row['gender']; ?>", district: "<?php echo $row['district']; ?>", address: "<?php echo $row['address']; ?>"})'>
+                                        <i class="fa fa-edit"></i>
+                                </button>
                                 </td>
                                 <td>
                                 <button class="btn btn-outline-danger" type="button" data-toggle="modal" href="#deleteDetails"><i class="fa fa-trash"></i></button>
@@ -279,27 +282,30 @@
         </div>
     </div>
 
-    <!--<script>
-        document.getElementById("form-row").onsubmit = function(e) {
-            e.preventDefault();
-            const dist = documnet.getElementById("dist").value;
-            const gender = documnet.getElementById("gender").value
-
-            const req = new XMLHttpRequest()
-            req.onreadystatechange = function() {
-                if(this.readyState == 4 && this.status == 200) {
-                    const data = this.response;
-                    const str = "";
-                    data.forEach(rec => {
-                        str += `<td>${rec.name}</td>
-                                <td>${rec.phone}</td>`
-                    })
-
-
-                }
-            }
+    <script>
+        function showEditDetailsModal(details) {
+            $("#addDetailsTitle").text("Edit Details");
+            $("#name-input").val(details.name);
+            $("#phone-input").val(details.phone);
+            $("#email-input").val(details.email);
+            $("#district-input").val(details.district);
+            $("#address-input").val(details.address);
+            $(`#${details.gender}`).attr("checked","checked")
+            $("#addDetails").modal();
         }
 
-    </script>-->
+        function showAddDetailsModal() {
+            $("#addDetailsTitle").text("Add Details");
+            $("#name-input").val("");
+            $("#phone-input").val("");
+            $("#email-input").val("");
+            $("#district-input").val("");
+            $("#address-input").val("");
+            $("#male").removeAttr("checked")
+            $("#female").removeAttr("checked")
+            $("#others").removeAttr("checked")
+            $("#addDetails").modal();
+        }
+    </script>
 </body>
 </html>
