@@ -1,4 +1,7 @@
-<?php include('server.php') ?>
+<?php 
+include('server.php');
+include('errors.php');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,30 +26,6 @@
             <div id="list-example" class="list-group col-md-1">
                 <button type="button" class="list-group-item list-group-item-action list-group-item-primary" data-toggle="modal" onclick="showAddDetailsModal()">ADD</button>
                 <!-- add/edit details Modal -->
-                <!--<script>
-                //$('#addDetails').on('show.bs.modal', function (event) {
-                //var button = $(event.relatedTarget) // Button that triggered the modal
-                //var id = button.data('whatever')
-                //}
-                <script>
-            -->
-                <?php
-                    if (isset($_GET['edit'])) {
-                        $id = $_GET['edit'];
-                        $update = true;
-                        $result = mysqli_query($db, "SELECT * FROM users WHERE id=$id");
-                    
-                        if (count($result) == 1 ) {
-                            $row = mysqli_fetch_array($result);
-                            $name = $row['name'];
-                            $phone = $row['phone'];
-                            $email = $row['email'];
-                            $gender = $row['gender'];
-                            $district = $row['district'];
-                            $address = $row['address'];
-                        }
-                    }
-                ?>
                 <div class="modal fade" id="addDetails" tabindex="-1" role="dialog" aria-labelledby="addDetailsTitle" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
@@ -158,11 +137,11 @@
             </div>
 
             <div class="col-md-10">
-            <form method="post" action="index.php" id="show-form">
+            <form method="post" id="show-form" >
                 <div class="form-row my-3">
                     <div class="col-auto">
-                        <select class="form-control" id="dist" name="dist">
-                            <option value="" selected disabled hidden>Select District</option>
+                        <select class="form-control" id="dist" name="dist" >
+                            <option value="" selected hidden>Select District</option>
                             <option value="Angul">Angul</option>
                             <option value="Balangir">Balangir</option>
                             <option value="Balasore">Balasore</option>
@@ -196,8 +175,8 @@
                         </select>
                     </div>
                     <div class="col-auto">
-                        <select class="form-control" id="gender" name="gender">
-                            <option value="" selected disabled hidden>Select Gender</option>
+                        <select class="form-control" id="gender" name="gender" >
+                            <option value="" selected  hidden>Select Gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                             <option value="others">Others</option>
@@ -207,16 +186,35 @@
                     <button class="btn btn-outline-primary" type="submit" name="show">Show</button>
                     </div>
                     <div class="col-auto">
-                    <button class="btn btn-outline-primary" type="reset">Reset</button>
+                    <button class="btn btn-outline-primary" type="submit" name="reset" >Reset</button>
                     </div>
                 </div>
             </form>
             <?php
-                 if (isset($_GET['query'])) {
-                    $query = $_GET['query'];
-                 }
-                $query = "SELECT * FROM users ORDER BY id DESC";
-                $results = mysqli_query($db, $query);
+                 if (isset($_POST['show'])) {
+                    // receive all input values from the form
+                    $gender = mysqli_real_escape_string($db, $_POST['gender']);
+                    $district = mysqli_real_escape_string($db, $_POST['dist']);
+
+                    if (!empty($gender) && !empty($district)) { 
+                        $query="SELECT * FROM users where gender='$gender' AND district='$district' ORDER BY date DESC";
+                        $results = mysqli_query($db, $query);
+                    }
+                    
+                    if(!empty($district) && empty($gender)){
+                        $query="SELECT * FROM users where district='$district' ORDER BY date DESC";
+                        $results = mysqli_query($db, $query);
+                    }
+                    if(!empty($gender) && empty($district)){
+                        $query="SELECT * FROM users where gender='$gender' ORDER BY date DESC";
+                        $results = mysqli_query($db, $query);
+                    }
+                }
+                else{
+                    $query = "SELECT * FROM users ORDER BY date DESC";
+                    $results = mysqli_query($db, $query);
+
+                 }//header('location: index.php?query="$query");
             ?>
             <table class="table table-hover">
                 <thead>
@@ -252,7 +250,7 @@
                                 </button>
                                 </td>
                                 <td>
-                                <button class="btn btn-outline-danger" type="button" data-toggle="modal" href="#deleteDetails"><i class="fa fa-trash"></i></button>
+                                <button class="btn btn-outline-danger" type="button" data-toggle="modal" onclick='deleteDetailsModal({id :"<?php echo $row['id']; ?>"})'><i class="fa fa-trash"></i></button>
                                 </div></td>
                             </tr>
                         <?php }
@@ -272,8 +270,11 @@
                     </button>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-warning">YES</button>
-                    <button type="button" class="btn btn-outline-primary" data-dismiss="modal">NO</button>
+                    <form method="post">
+                        <input type="hidden" id="id-input" name="hidden-id">
+                        <button type="submit" class="btn btn-outline-warning" name="dele" >YES</button>
+                        <button type="button" class="btn btn-outline-primary" data-dismiss="modal">NO</button>
+                    </form>
                 </div>
                 </div>
             </div>
@@ -288,9 +289,9 @@
             $("#name-input").val(details.name);
             $("#phone-input").val(details.phone);
             $("#email-input").val(details.email);
-            $("#district-input").val(details.district);
+            $("#dist-input").val(details.district);
             $("#address-input").val(details.address);
-            $(`#${details.gender}`).attr("checked","checked")
+            $(`#${details.gender}`).attr("checked","checked");
             $("#addDetails").modal();
         }
 
@@ -299,12 +300,17 @@
             $("#name-input").val("");
             $("#phone-input").val("");
             $("#email-input").val("");
-            $("#district-input").val("");
+            $("#dist-input").val("");
             $("#address-input").val("");
             $("#male").removeAttr("checked")
             $("#female").removeAttr("checked")
             $("#others").removeAttr("checked")
             $("#addDetails").modal();
+        }
+
+        function deleteDetailsModal(details){
+            $("#id-input").val(details.id);
+            $("#deleteDetails").modal();
         }
     </script>
 </body>
